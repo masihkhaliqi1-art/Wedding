@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Wedding Board Map — Responsive</title>
+<style>
+  :root {
+    --accent: #3aa84a;
+    --decor: #d8e6d2;
+  }
+  body {
+    margin: 0;
+    font-family: Georgia, serif;
+    background: #fff;
+    color: #333;
+  }
+  h1 {
+    text-align: center;
+    margin: 10px 0;
+  }
+  .container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px;
+  }
+  .section {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .left, .right, .middle, .bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+  }
+  /* Top layout */
+  .top {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .top-left, .top-right {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Guest Overview List */
+  .guest-summary {
+    list-style: none;
+    padding: 0;
+    margin: 10px auto;
+    max-width: 600px;
+    text-align: left;
+  }
+  .guest-summary li {
+    background: #f7f7f7;
+    margin: 4px 0;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  /* Bottom-left grid */
+  .bottom-left {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(60px, 1fr));
+    gap: 12px;
+    justify-items: center;
+  }
+
+  /* Decorative rectangles */
+  .decor {
+    background: var(--decor);
+    border-radius: 8px;
+    width: 80px;
+    height: 20px;
+    margin: 0 auto;
+  }
+
+  /* Boards (tables) */
+  .table {
+    position: relative;
+    cursor: pointer;
+  }
+  .ring {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: conic-gradient(#f06 0 14%, #f6eeb0 14% 30%, #3aa84a 30% 48%, #4b8be6 48% 72%, #cfcfcf 72% 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+    position: relative;
+  }
+  .ring.oval {
+    width: 110px;
+    height: 70px;
+    border-radius: 50% / 40%;
+  }
+  .ring::before {
+    content: '';
+    position: absolute;
+    inset: 10px;
+    border-radius: 50%;
+    background: #fff;
+  }
+  .inner {
+    position: relative;
+    z-index: 2;
+    font-weight: bold;
+  }
+  .badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #fff;
+    border-radius: 999px;
+    padding: 4px 6px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    font-size: 13px;
+  }
+  .ring.assigned::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow: 0 0 0 6px rgba(255,0,0,0.8);
+  }
+
+  /* Center decoratives */
+  .middle {
+    text-align: center;
+    margin: 10px 0;
+  }
+  .middle h2 {
+    margin: 6px 0;
+    font-family: 'Times New Roman', serif;
+    letter-spacing: 1px;
+  }
+
+  /* Panel (guest edit) */
+  .panel {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 16px;
+    border-radius: 10px;
+    width: min(480px, 90%);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+    display: none;
+    z-index: 999;
+  }
+  .panel.open { display: block; }
+
+  input[type=text], input[type=number] {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  button {
+    background: var(--accent);
+    color: #fff;
+    border: 0;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  button.secondary { background: #888; }
+  ul { list-style: none; padding: 0; margin: 6px 0; }
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    margin: 4px 0;
+  }
+  .small { font-size: 13px; color: #666; }
+
+  @media (max-width: 600px) {
+    .ring { width: 60px; height: 60px; }
+    .bottom-left { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+  <h1>Wedding Board Map — Responsive</h1>
+  <div class="container">
+
+    <!-- Top Section -->
+    <div class="top">
+      <div class="top-left">
+        <div class="column" id="colA"></div>
+        <div class="column" id="colB"></div>
+      </div>
+
+      <div class="top-right">
+        <div class="column" id="colC"></div>
+        <div class="column" id="colD"></div>
+        <div class="column" id="colE"></div>
+      </div>
+    </div>
+
+    <!-- Middle Section -->
+    <div class="middle">
+      <h3>Guest Overview</h3>
+      <ul id="allGuestList" class="guest-summary"></ul>
+
+      <h2>Brudparet</h2>
+      <div class="decor"></div>
+      <h2>The Scene</h2>
+    </div>
+
+    <!-- Decorative Divider -->
+    <div class="decor"></div>
+
+    <!-- Bottom Section -->
+    <div class="bottom-left" id="bottomLeft"></div>
+    <div class="bottom-left" id="bottomLeft2"></div>
+
+    <!-- Panel -->
+    <div class="panel" id="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong id="panelTitle">Board</strong>
+        <button id="closePanel" class="secondary">Close</button>
+      </div>
+      <div class="row" style="display:flex;gap:8px;margin-top:8px;">
+        <input id="guestName" type="text" placeholder="Guest name" />
+        <input id="guestCount" type="number" min="1" value="1" style="width:80px" />
+        <button id="addGuest">Add</button>
+      </div>
+      <div>
+        <div class="small">Guests on this board</div>
+        <ul id="guestList"></ul>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+        <div class="small" id="summary">0 guests — 0 chairs</div>
+        <div style="display:flex;gap:8px">
+          <button id="clearTable" class="secondary">Clear</button>
+          <button id="saveClose">Done</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+(function(){
+  const BOARD_COUNT = 27;
+  const storageKey = 'wedding_map_v2';
+  const panel = document.getElementById('panel');
+  const panelTitle = document.getElementById('panelTitle');
+  const closePanel = document.getElementById('closePanel');
+  const guestName = document.getElementById('guestName');
+  const guestCount = document.getElementById('guestCount');
+  const addGuest = document.getElementById('addGuest');
+  const guestList = document.getElementById('guestList');
+  const summary = document.getElementById('summary');
+  const clearTable = document.getElementById('clearTable');
+  const saveClose = document.getElementById('saveClose');
+
+  let state = load() || { data: {} };
+
+  function makeBoard(i) {
+    const el = document.createElement('div');
+    el.className = 'table';
+    el.dataset.id = i;
+
+    // Ovals: 6,7,9,10,11,12,23,27
+    const ovalList = [6,7,9,10,11,12,23,27];
+    const ringClass = ovalList.includes(i) ? 'ring oval' : 'ring';
+
+    el.innerHTML = `<div class="${ringClass}"><div class="inner">${i}</div></div><div class="badge">0</div>`;
+    el.addEventListener('click', () => openPanel(i));
+    updateBadge(el, i);
+    return el;
+  }
+
+  // Distribute boards into columns/rows
+  const colA = document.getElementById('colA');
+  const colB = document.getElementById('colB');
+  const colC = document.getElementById('colC');
+  const colD = document.getElementById('colD');
+  const colE = document.getElementById('colE');
+  const bottom1 = document.getElementById('bottomLeft');
+  const bottom2 = document.getElementById('bottomLeft2');
+
+  for (let i=1;i<=4;i++) colA.appendChild(makeBoard(i));
+  for (let i=5;i<=7;i++) colB.appendChild(makeBoard(i));
+  for (let i=8;i<=12;i++) colC.appendChild(makeBoard(i));
+  for (let i=13;i<=17;i++) colD.appendChild(makeBoard(i));
+  for (let i=18;i<=19;i++) colE.appendChild(makeBoard(i));
+  for (let i=20;i<=23;i++) bottom1.appendChild(makeBoard(i));
+  for (let i=24;i<=27;i++) bottom2.appendChild(makeBoard(i));
+
+  // Panel logic
+  let active = null;
+  function openPanel(id) {
+    active = 'b'+id;
+    panelTitle.textContent = 'Board ' + id;
+    guestName.value = '';
+    guestCount.value = 1;
+    renderGuestList();
+    panel.classList.add('open');
+  }
+  closePanel.addEventListener('click', ()=> panel.classList.remove('open'));
+  addGuest.addEventListener('click', ()=>{
+    if(!active) return;
+    const name = guestName.value.trim();
+    const chairs = Math.max(1, Number(guestCount.value)||1);
+    if(!name) return alert('Enter a name');
+    state.data[active] = state.data[active] || [];
+    state.data[active].push({name, chairs});
+    save();
+    guestName.value='';
+    guestCount.value=1;
+    renderGuestList();
+    updateBadgeForActive();
+    renderAllGuests();
+  });
+  clearTable.addEventListener('click', ()=>{
+    if(!active) return;
+    if(!confirm('Clear all guests from this board?')) return;
+    state.data[active] = [];
+    save();
+    renderGuestList();
+    updateBadgeForActive();
+    renderAllGuests();
+  });
+  saveClose.addEventListener('click', ()=>{
+    panel.classList.remove('open');
+    active=null;
+  });
+
+  function renderGuestList() {
+    guestList.innerHTML='';
+    const list = state.data[active]||[];
+    list.forEach((g,idx)=>{
+      const li=document.createElement('li');
+      li.innerHTML = `<div><strong>${escapeHtml(g.name)}</strong><div class="small">${g.chairs} chairs</div></div>
+      <div style="display:flex;gap:6px">
+        <button data-edit=${idx}>Edit</button>
+        <button data-del=${idx}>Del</button>
+      </div>`;
+      guestList.appendChild(li);
+    });
+    const totals = list.reduce((s,g)=>({guests:s.guests+1,chairs:s.chairs+g.chairs}),{guests:0,chairs:0});
+    summary.textContent = `${totals.guests} guests — ${totals.chairs} chairs`;
+
+    guestList.querySelectorAll('[data-edit]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const idx=Number(btn.getAttribute('data-edit'));
+        const g=state.data[active][idx];
+        const nn=prompt('Edit name', g.name);
+        if(nn===null) return;
+        const nc=prompt('Chairs', g.chairs);
+        if(nc===null) return;
+        state.data[active][idx] = {name: nn.trim()||g.name, chairs: Math.max(1, Number(nc)||g.chairs)};
+        save();
+        renderGuestList();
+        updateBadgeForActive();
+        renderAllGuests();
+      });
+    });
+
+    guestList.querySelectorAll('[data-del]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const idx=Number(btn.getAttribute('data-del'));
+        if(!confirm('Remove this guest?')) return;
+        state.data[active].splice(idx,1);
+        save();
+        renderGuestList();
+        updateBadgeForActive();
+        renderAllGuests();
+      });
+    });
+  }
+
+  function updateBadge(el,id){
+    const key='b'+id;
+    const list = state.data[key]||[];
+    const badge = el.querySelector('.badge');
+    badge.textContent = list.length;
+    const ring = el.querySelector('.ring');
+    if(list.length>0) ring.classList.add('assigned'); else ring.classList.remove('assigned');
+  }
+  function updateBadgeForActive(){
+    if(!active) return;
+    const id=active.slice(1);
+    const el=document.querySelector('.table[data-id="'+id+'"]');
+    if(el) updateBadge(el,id);
+  }
+
+  // Guest Overview list in middle
+  function renderAllGuests() {
+    const listEl = document.getElementById('allGuestList');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+
+    const boards = Object.keys(state.data).sort((a,b)=>Number(a.slice(1))-Number(b.slice(1)));
+    boards.forEach(key => {
+      const guests = state.data[key] || [];
+      if (guests.length === 0) return;
+      const boardId = key.slice(1);
+      const names = guests.map(g => `${escapeHtml(g.name)} (${g.chairs})`).join(', ');
+      const li = document.createElement('li');
+      li.innerHTML = `<strong>Board ${boardId}:</strong> ${names}`;
+      listEl.appendChild(li);
+    });
+
+    if (listEl.children.length === 0) {
+      listEl.innerHTML = '<li class="small">No guests assigned yet.</li>';
+    }
+  }
+
+  // Initial render
+  renderAllGuests();
+
+  function save(){ localStorage.setItem(storageKey, JSON.stringify(state)); }
+  function load(){ try{return JSON.parse(localStorage.getItem(storageKey)||'null');}catch{return null;} }
+  function escapeHtml(s){ return String(s).replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]||c)); }
+
+})();
+</script>
+</body>
+</html>
